@@ -29,23 +29,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
   var myFontSize = 30.0;
 
-  void _incrementCounter() {
-    setState(() {
-      if(_counter < 99.0) {
-        _counter++;
-      }
-    });
-  }
-  setNewValue(double value)
-  {
-    setState(() {
-      _counter = value;
-      myFontSize = value;
-    });
-  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
