@@ -208,6 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 Expanded(
                   child: Stack(
