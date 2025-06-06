@@ -1,15 +1,17 @@
+import 'package:encrypted_shared_preferences/encrypted_shared_preferences.dart';
 import 'package:flutter/material.dart';
 
 void main() {
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -30,8 +32,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var _counter = 0.0;
-  var myFontSize = 30.0;
   late TextEditingController _username;
   late TextEditingController _password;
   var imageSource = "images/question-mark.png";
@@ -39,6 +39,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+
+    getSharedPreferences();
+
     _username = TextEditingController();
     _password = TextEditingController();
   }
@@ -49,79 +52,99 @@ class _MyHomePageState extends State<MyHomePage> {
     _password.dispose();
     super.dispose();
   }
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      if(_counter < 99.0) {
-        _counter++;
-      }
-    });
-  }
-  buttonClicked() {
-    setState(() {
-      if(_password.value.text != "QWERTY123"){
-          imageSource = "images/stop.png";
-      }else{
-          imageSource = "images/idea.png";
-      }
-      });
-  }
-  setNewValue(double value)
-  {
-    setState(() {
-      _counter = value;
-      myFontSize = value;
-    });
-  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
         title: Text(widget.title),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
-            TextField(controller: _username,
-              decoration: InputDecoration(
-              hintText:"Username",
-              border: OutlineInputBorder(),
-              labelText:"Login"
-              )),
-
-            TextField(controller: _password,
-                obscureText:true,
+            TextField(
+                controller: _username,
                 decoration: InputDecoration(
-                    hintText:"Password",
+                    hintText: "Username",
                     border: OutlineInputBorder(),
-                    labelText:"Password"
+                    labelText: "Login"
                 )),
 
-            ElevatedButton(onPressed:buttonClicked, child: Text("Login")),
+            TextField(
+                controller: _password,
+                obscureText: true,
+                decoration: InputDecoration(
+                    hintText: "Password",
+                    border: OutlineInputBorder(),
+                    labelText: "Password"
+                )),
 
+            ElevatedButton(onPressed: loginClicked, child: Text("Login")),
 
             Semantics(child: Image.asset(imageSource)),
-
-            Text('You have pushed the button this many times:', style: TextStyle(fontSize: myFontSize)),
-
-            Text('$_counter', style: TextStyle(fontSize: myFontSize)),
-
-            Slider(value:myFontSize, max:100.0, onChanged: setNewValue, min:0.0)
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+
+  void loginClicked() {
+    showDialog(context: context, builder: (BuildContext context) =>
+        AlertDialog(
+          title: const Text('Save Information'),
+          content: const Text(
+              'Would you like to save your login info for next time?'),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
+                prefs.setString("usrName", _username.value.text);
+                prefs.setString("usrPwd", _password.value.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Yes'),),
+            FilledButton(
+              onPressed: () {
+                EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
+                prefs.clear();
+                Navigator.of(context).pop();
+              },
+              child: const Text('No'),),
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Later'),)
+          ],
+        ),
+    );
+    setState(() {
+      if (_password.value.text != "QWERTY123") {
+        imageSource = "images/stop.png";
+      } else {
+        imageSource = "images/idea.png";
+      }
+    });
+  }
+
+  void getSharedPreferences() async {
+    EncryptedSharedPreferences prefs = EncryptedSharedPreferences();
+    var strUsr = await prefs.getString("usrName");
+    var strPwd = await prefs.getString("usrPwd");
+
+    if (strPwd.isNotEmpty) {
+      _username.text = strUsr;
+      _password.text = strPwd;
+      Future.delayed(Duration.zero, () {
+        const snackBar = SnackBar(content: Text('Login Auto-Filled'));
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      });
+    }
   }
 }
