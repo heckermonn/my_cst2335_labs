@@ -85,7 +85,7 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ShoppingItem` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `quantity` TEXT NOT NULL, PRIMARY KEY (`id`))');
+            'CREATE TABLE IF NOT EXISTS `ShoppingItem` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `quantity` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -136,8 +136,10 @@ class _$ShoppingItemDao extends ShoppingItemDao {
   @override
   Future<List<ShoppingItem>> findAllItems() async {
     return _queryAdapter.queryList('SELECT * FROM ShoppingItem',
-        mapper: (Map<String, Object?> row) => ShoppingItem(row['id'] as int,
-            row['name'] as String, row['quantity'] as String));
+        mapper: (Map<String, Object?> row) => ShoppingItem(
+            id: row['id'] as int?,
+            name: row['name'] as String,
+            quantity: row['quantity'] as String));
   }
 
   @override
